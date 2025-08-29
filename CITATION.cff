@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite it as below."
+title: "RBR Wave Processing (MATLAB)"
+authors:
+  - family-names: "Zouaghi"
+    given-names: "Faten"
+version: "1.0.0"
+date-released: "2025-08-29"
+url: "https://github.com/fatenzouaghi/rbr-wave-processing"
+repository-code: "https://github.com/fatenzouaghi/rbr-wave-processing"
+doi: "10.5281/zenodo.YYYYYYY"     # remplace par le DOI Zenodo du code
+license: "MIT"
+preferred-citation:
+  type: software
+  authors:
+    - family-names: "Zouaghi"
+      given-names: "Faten"
+  title: "RBR Wave Processing (MATLAB)"
+  year: 2025
+  publisher: "Zenodo"
+  doi: "10.5281/zenodo.YYYYYYY"
+  url: "https://github.com/fatenzouaghi/rbr-wave-processing"
