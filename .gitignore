@@ -1,6 +1,6 @@
-# Ignore RBR files
+# Ignore RBR & meteo files
 *.rsk
-*.mat
+*.csv
 
 # Ignore MATLAB temporary files
 *.asv
