@@ -20,20 +20,20 @@ cfg.meteoMat = fullfile("data","meteo.mat");                 % expects Time_UTC,
 %% 2) SITE / GEOMETRY (same vertical datum for zmembrane & zfond)
 cfg.zmembrane = -1.191;     % m
 cfg.zfond     = -1.597;     % m
-cfg.HAB       = cfg.zmembrane - cfg.zfond;  % m (Height Above Bed)
+cfg.hd       = cfg.zmembrane - cfg.zfond;  % m (Height Above Bed)
 cfg.alti      = 44.5;       % m (met station altitude above MSL) — change for your station
 
 %% 3) ACQUISITION / PROCESSING
 cfg.fs    = 4;              % Hz sampling frequency
 cfg.nfft  = 1024;           % FFT length (Δf = fs/nfft ≈ 0.0039 Hz)
 cfg.delay = 60*20;          % s, step between consecutive spectra (20 min)
-cfg.crit  = 0.2;           % m, “sensor under water” threshold (if used)
+cfg.crit  = 0.35;           % m, “sensor under water” threshold (if used)
 
 %% 4) FREQUENCY BANDS
 cfg.minFreq      = 0.0083;   % Hz 
 cfg.igCutoff     = 0.05;    % Hz (IG / sea-swell split)
 cfg.maxFreq      = 0.5;     % Hz (upper useful band)
-cfg.transferStop = 0.40;    % Hz (cap pressure→elevation transfer above this)
+
 
 %% 5) PHYSICAL CONSTANTS
 cfg.rho = 1023;             % kg/m^3 (seawater)
