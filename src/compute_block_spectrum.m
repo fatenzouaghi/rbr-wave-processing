@@ -15,7 +15,7 @@ function res = compute_block_spectrum(press_samp, depth_mean, opts)
 rho = 1023; g = 9.81;
 
 % 1) Pressure PSD 
-[ff, df, PPp, ~, ~] = spectrum_fabrice(press_samp, opts.fs, opts.nfft, depth_mean);
+[ff, df, PPp, ~, ~] = spectrum (press_samp, opts.fs, opts.nfft, depth_mean);
 
 % 2) Pressure → elevation via linear wave theory
 PP = convert_pressure_to_elevation(ff, depth_mean, opts, PPp);
