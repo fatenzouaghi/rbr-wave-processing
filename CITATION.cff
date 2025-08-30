@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 type: software
-title: "RBR Wave Processing (MATLAB)"
+title: "RBR Wave Processing"
 authors:
   - family-names: Zouaghi
     given-names: Faten
