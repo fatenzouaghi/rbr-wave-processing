@@ -15,7 +15,7 @@ The original meteorological observations were obtained from the official
 [Environment and Climate Change Canada portal](https://climat.meteo.gc.ca/historical_data/search_historic_data_f.html).  
 
 ## Usage
-This repository contains MATLAB code to process RBR pressure (.rsk) into wave parameters (HS, Hs_IG, Hs_SW, Tp, Tm01, Tm02, ABSOLUTE_WL, WL_CGVD2013).Further instructions on using the functions are provided via inline comments and function help blocks throughout the code.
+This repository contains MATLAB code to process RBR pressure (.rsk) into wave parameters (HS, Hs_IG, Hs_SW, Tp, Tm01, Tm02) and water levels (ABSOLUTE_WL, WL_CGVD2013). Further instructions on using the functions are provided via inline comments and function help blocks throughout the code.
 ## Author
 **Faten Zouaghi** *(University of Quebec at Rimouski)*  
 ORCID: [0009-0003-0722-4947]((https://orcid.org/0009-0003-0722-4947)  
