@@ -14,6 +14,6 @@ opts_defaults.delay_sec       = 60*20;    % 20-minute blocks
 opts_defaults.crit_m          = 0.35;     % minimum ABSOLUTE_WL to compute spectrum (m)
 
 % Site/sensor
-opts_defaults.alti      = 44.5;    % m (met station altitude above MSL)
+opts_defaults.alti      = 44.5;    % m (station altitude above MSL)
 opts_defaults.zmembrane = -1.236;  % m (sensor membrane elevation)
 opts_defaults.zbottom   = -1.52;   % m (bed elevation)
