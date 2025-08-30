@@ -1,4 +1,4 @@
-function [ff, df, PP] = spectrum_fabrice(e, Fs, nfft)
+function [ff, df, PP] = spectrum(e, Fs, nfft)
 % Reproduces your windowing/overlap/Hanning approach in a compact way.
 % Outputs one-sided PSD of PRESSURE (Pa^2/Hz), frequencies ff and df.
 
