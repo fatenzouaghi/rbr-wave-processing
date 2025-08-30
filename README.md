@@ -7,8 +7,6 @@ The code corrects atmospheric pressure, computes water levels, and estimates wav
 - `CITATION.cff` — citation metadata (GitHub/Zenodo)
 - `config.m` — configuration file (paths, constants)
 - `src/` — MATLAB functions 
-- `examples/` — example script(s)
-- `data/` — raw RBR file (`.rsk`) and `meteo.mat`
 - `docs/code-availability.md` — statement for the manuscript
 
 ## Requirements
