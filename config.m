@@ -7,6 +7,7 @@ function cfg = config()
 %   https://climat.meteo.gc.ca/historical_data/search_historic_data_f.html
 %
 % Usage:
+%   addpath(genpath("src"));
 %   cfg  = config();
 %   opts = struct('alti',cfg.alti,'HAB',cfg.HAB,'fs',cfg.fs,...
 %                 'use_attenuation',cfg.use_attenuation);
