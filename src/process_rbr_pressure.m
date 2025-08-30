@@ -44,8 +44,8 @@ pRaw = Data.data.values(:,1) * 1e4; % dbar → Pa (absolute pressure)
 %% -------- 2) Load meteo & barometric leveling ----------
 S = readmatrix(meteoFile);  % expects: Time_UTC, Press (kPa), Temperature (°C)
 Time   = S(:,1);         
-Press  = S(:,2);          % (kPa)
-Temp     = S(:,3);          % (°C)
+Press  = S(:,2);          
+Temp     = S(:,3);          
 
 % fill then interpolate onto RBR timestamps
 Press_intrp = fillmissing(Press*1000, 'linear'); 
