@@ -42,10 +42,10 @@ time = Data.data.tstamp;            % datetime (UTC)
 pRaw = Data.data.values(:,1) * 1e4; % dbar → Pa (absolute pressure)
 
 %% -------- 2) Load meteo & barometric leveling ----------
-S = load(meteoCSV);  % expects: Time_UTC, Press (kPa), Temperature (°C)
-Time_UTC   = S.Time_UTC;         % datetime (UTC)
-Press_kPa  = S.Press;            % kPa
-Temp_C     = S.Temperature;      % °C
+A = readmatrix(meteoCSV);  % expects: Time_UTC, Press (kPa), Temperature (°C)
+Time_UTC   = A(:,1);         
+Press_kPa  = A(:,2);          % (kPa)
+Temp_C     = A(:,3);          % (°C)
 
 % Safe fill then interpolate onto RBR timestamps
 Press_Pa = fillmissing(S.Press*1000, 'linear'); % kPa→Pa
