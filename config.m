@@ -1,4 +1,3 @@
-
 % config.m - Configuration file for wave analysis parameters
 
 % Sampling frequency (Hz)
