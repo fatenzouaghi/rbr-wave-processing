@@ -9,7 +9,7 @@ The code corrects atmospheric pressure, computes water levels, and estimates wav
 ## Data availability
 
 - **Raw RBR file (.rsk)** used in this study is archived on Zenodo: DOI: 10.5281/zenodo.XXXXXXX  
-- **Meteorological data (.csv)** for this example are also archived on Zenodo to allow full reproducibility.  
+- **Meteorological data (.csv)** for this project are also archived on Zenodo to allow full reproducibility.  
 
 The original meteorological observations were obtained from the official  
 [Environment and Climate Change Canada portal](https://climat.meteo.gc.ca/historical_data/search_historic_data_f.html).  
