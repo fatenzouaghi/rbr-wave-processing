@@ -1,46 +1,21 @@
-function cfg = config()
-% CONFIG  Central configuration for rbr-wave-processing.
-%
-% References:
-% - RSKtools (RBR) to read .rsk files: https://rbr-global.com/support/matlab-tools/
-% - Environment and Climate Change Canada (ECCC) – historical met data:
-%   https://climat.meteo.gc.ca/historical_data/search_historic_data_f.html
-%
-% Usage:
-%   addpath(genpath("src"));
-%   cfg  = config();
-%   opts = struct('alti',cfg.alti,'HAB',cfg.HAB,'fs',cfg.fs,...
-%                 'use_attenuation',cfg.use_attenuation);
-%   out  = process_rbr_pressure(cfg.rskFile, cfg.meteoMat, opts);
 
-%% 1) FILES (edit these paths if needed)
-cfg.rskFile  = fullfile("data","1_1_206715_20210906_2304.rsk");  % example RBR .rsk
-cfg.meteoMat = fullfile("data","METEO_GF_2021.mat");                 % expects Time_UTC, Press(kPa), Temperature(°C)
+% config.m - Configuration file for wave analysis parameters
 
-%% 2) SITE / GEOMETRY (same vertical datum for zmembrane & zfond)
-cfg.zmembrane = -1.236;     % m
-cfg.zbottom     = -1.520;     % m
-cfg.hd       = cfg.zmembrane - cfg.zfond;  % m (Height Above Bed)
-cfg.alti      = 44.5;       % m (met station altitude above MSL) — change for your station
+% Sampling frequency (Hz)
+opts.fs = 4;
 
-%% 3) ACQUISITION / PROCESSING
-cfg.fs    = 4;              % Hz sampling frequency
-cfg.nfft  = 1024;           % FFT length (Δf = fs/nfft ≈ 0.0039 Hz)
-cfg.delay = 60*20;          % s, step between consecutive spectra (20 min)
-cfg.crit  = 0.35;           % m, “sensor under water” threshold (if used)
+% FFT size
+opts.nfft = 1024;
 
-%% 4) FREQUENCY BANDS
-cfg.minFreq      = 0.0083;   % Hz 
-cfg.igCutoff     = 0.05;    % Hz (IG / sea-swell split)
-cfg.maxFreq      = 0.5;     % Hz (upper useful band)
+% Use attenuation for pressure to elevation conversion (if applicable) 
+opts.use_attenuation = true;
 
+% Frequency bounds
+opts.minFreq = 0.0083;   % Minimum frequency
+opts.igCutoff = 0.05;    % Infragravity wave cutoff frequency
+opts.maxFreq = 0.5;      % Maximum frequency
 
-%% 5) PHYSICAL CONSTANTS
-cfg.rho = 1023;             % kg/m^3 (seawater)
-cfg.g   = 9.81;             % m/s^2
-cfg.R   = 8.314;            % gas constant
-cfg.M   = 0.02896;          % molar mass of air (kg/mol)
-
-%% 6) OPTIONS
-cfg.use_attenuation = true; % apply pressure→elevation transfer function
-end
+% Sensor parameters
+opts.alti = 44.5;   % Altitude of the meteorological station above sea level (meters)
+opts.zmembrane = -1.236;   % Height of the sensor above the bed (meters)
+opts.zbottom = -1.52; % Depth at the bottom (meters)
