@@ -1,0 +1,11 @@
+# Ignore RBR files
+*.rsk
+*.mat
+
+# Ignore MATLAB temporary files
+*.asv
+*.swp
+*.bak
+
+# Ignore compiled MATLAB code
+*.mex* 
