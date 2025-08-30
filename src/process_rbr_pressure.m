@@ -42,7 +42,6 @@ rho = 1023; g = 9.81; R = 8.314; M = 0.02896;
 %% 1) Read RBR time series (absolute pressure) via RSKtools
 RSK  = RSKopen(rskFile);
 Data = RSKreaddata(RSK);
-
 time = Data.data.tstamp;
 
 % PRESSURE 
@@ -75,7 +74,7 @@ if opts.use_attenuation
     TF = cosh(k.*h_mean) ./ cosh(k.*opts.hd) / (rho*g)
     PP = PPp .* (TF.^2);                        % elevation PSD [m^2/Hz]
 else
-    PP = PPp ./ (rho*g).^2;                     % hydrostatic-only fallback
+    PP = PPp ./ (rho*g).^2;                     
 end
 
 % Frequency band selection
