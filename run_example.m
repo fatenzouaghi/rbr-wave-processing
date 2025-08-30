@@ -3,8 +3,22 @@ addpath('src');  % code
 run('config/config.m');  % defines opts_defaults
 
 % ---- user inputs (raw data live on Zenodo) 
-rskFile  = 'data/raw/rbr_file.rsk';
-meteoMat = 'data/meteo/meteo_file.mat'; % contains Time_UTC, Press(kPa), Temperature(C)
+% --- EDIT HERE: put your LOCAL paths (examples below) ---------------------
+% Windows example:
+% rskFile  = 'C:\Users\me\Downloads\1_1_206715_20210906_2304.rsk';
+% meteoMat = 'C:\Users\me\Downloads\METEO_GF_2021_UTC.mat';
+
+% macOS example:
+% rskFile  = '/Users/me/Downloads/1_1_206715_20210906_2304.rsk';
+% meteoMat = '/Users/me/Downloads/METEO_GF_2021_UTC.mat';
+
+% Linux example:
+% rskFile  = '/home/me/Downloads/1_1_206715_20210906_2304.rsk';
+% meteoMat = '/home/me/Downloads/METEO_GF_2021_UTC.mat';
+
+% >>> Replace the two lines below with YOUR local paths:
+rskFile  = '/ABSOLUTE/OR/RELATIVE/PATH/TO/your_file.rsk';
+meteoMat = '/ABSOLUTE/OR/RELATIVE/PATH/TO/METEO_GF_2021_UTC.mat';
 
 % Optional: override a few defaults at runtime
 opts = struct();
