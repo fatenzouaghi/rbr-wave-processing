@@ -6,19 +6,19 @@ run('config/config.m');  % defines opts_defaults
 % --- EDIT HERE: put your LOCAL paths (examples below) ---------------------
 % Windows example:
 % rskFile  = 'C:\Users\me\Downloads\1_1_206715_20210906_2304.rsk';
-% meteoMat = 'C:\Users\me\Downloads\METEO_GF_2021_UTC.mat';
+% meteoMat = 'C:\Users\me\Downloads\METEO_GF_2021_UTC.csv';
 
 % macOS example:
 % rskFile  = '/Users/me/Downloads/1_1_206715_20210906_2304.rsk';
-% meteoMat = '/Users/me/Downloads/METEO_GF_2021_UTC.mat';
+% meteoMat = '/Users/me/Downloads/METEO_GF_2021_UTC.csv';
 
 % Linux example:
 % rskFile  = '/home/me/Downloads/1_1_206715_20210906_2304.rsk';
-% meteoMat = '/home/me/Downloads/METEO_GF_2021_UTC.mat';
+% meteoMat = '/home/me/Downloads/METEO_GF_2021_UTC.csv';
 
 % >>> Replace the two lines below with YOUR local paths:
 rskFile  = '/ABSOLUTE/OR/RELATIVE/PATH/TO/your_file.rsk';
-meteoMat = '/ABSOLUTE/OR/RELATIVE/PATH/TO/METEO_GF_2021_UTC.mat';
+meteoMat = '/ABSOLUTE/OR/RELATIVE/PATH/TO/METEO_GF_2021_UTC.csv';
 
 % Optional: override a few defaults at runtime
 opts = struct();
