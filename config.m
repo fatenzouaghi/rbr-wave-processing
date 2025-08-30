@@ -14,12 +14,12 @@ function cfg = config()
 %   out  = process_rbr_pressure(cfg.rskFile, cfg.meteoMat, opts);
 
 %% 1) FILES (edit these paths if needed)
-cfg.rskFile  = fullfile("data","206599_20220715_2119.rsk");  % example RBR .rsk
-cfg.meteoMat = fullfile("data","meteo.mat");                 % expects Time_UTC, Press(kPa), Temperature(°C)
+cfg.rskFile  = fullfile("data","1_1_206715_20210906_2304.rsk");  % example RBR .rsk
+cfg.meteoMat = fullfile("data","METEO_GF_2021.mat");                 % expects Time_UTC, Press(kPa), Temperature(°C)
 
 %% 2) SITE / GEOMETRY (same vertical datum for zmembrane & zfond)
-cfg.zmembrane = -1.191;     % m
-cfg.zfond     = -1.597;     % m
+cfg.zmembrane = -1.236;     % m
+cfg.zbottom     = -1.520;     % m
 cfg.hd       = cfg.zmembrane - cfg.zfond;  % m (Height Above Bed)
 cfg.alti      = 44.5;       % m (met station altitude above MSL) — change for your station
 
