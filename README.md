@@ -24,4 +24,4 @@ Contact: [faten_zouaghi@uqar.ca](mailto:faten_zouaghi@uqar.ca)
 
 ## License
 
-This project is released under the MIT License.
+This repository is licensed under Apache License 2.0.
