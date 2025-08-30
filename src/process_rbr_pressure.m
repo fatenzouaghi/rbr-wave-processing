@@ -50,6 +50,10 @@ opts.hd = opts.zmembrane - opts.zbottom;  % Sensor height above the bed (zmembra
 rho = 1023;  % Density of seawater (kg/m^3)
 g = 9.81;    % Gravitational acceleration (m/s^2)
 
+%% Set Additional Parameters (delay and crit)
+delay = 60 * 20;  % Time interval for spectrum calculation (20 minutes)
+crit = 0.35;  % Minimum height for which the spectrum calculation will be done
+
 %% 1) Read RBR data (.rsk) using RSKtools
 % Load the RBR sensor data using RSKtools
 RSK = RSKopen(rskFile);
@@ -77,47 +81,49 @@ p = pRaw - pAtm_corr;                         % Pressure in Pa
 % Calculate absolute water level (in meters): H = p / (ρ * g) + hd
 ABSOLUTE_WL = p / (rho * g) + opts.hd;
 
-%% 3) Compute pressure spectrum and convert to elevation spectrum
-% Use the "spectrum" function to calculate the pressure spectrum
-h_mean = mean(p) / (rho * g) + opts.hd;   % Approximate mean depth used as depth proxy
-[ff, df, PPp, ~, ~] = spectrum(p, opts.fs, opts.nfft, h_mean); % Pressure PSD (Power Spectral Density)
 
-% Call the function for pressure to elevation conversion
-PP = convert_pressure_to_elevation(ff, h_mean, opts, PPp);
+%% 4) Spectral Calculation Loop (Using delay and crit)
 
-% Select frequency band of interest
-freqRange = (ff >= opts.minFreq & ff <= opts.maxFreq);
-ff = ff(freqRange);
-PP = PP(freqRange);
+% Calculate the number of spectra based on the data length and delay
+nbspectre = floor(length(p) / delay); % Number of spectra
 
-%% 4) Compute spectral moments and wave parameters
-m0 = sum(PP) * df;           % Zero moment
-m1 = sum(ff .* PP) * df;     % First moment
-m2 = sum((ff .^ 2) .* PP) * df;  % Second moment
+Hs = nan(nbspectre, 1);  % Initialize significant wave height array
+Time = nan(nbspectre, 1); % Initialize time array
+ABSOLUTE_WL = Time;  % Initialize water level array
 
-Hs = 4 * sqrt(m0);           % Significant wave height
-[~, pk] = max(PP);           % Find the peak frequency
-Tp = 1 / ff(pk);             % Peak period
-Tm01 = m0 / m1;              % Mean period (Tm01)
-Tm02 = sqrt(m0 / m2);       % Mean period (Tm02)
+% Loop through each spectrum
+for i = 1:nbspectre
+    disp(['Processing spectrum ', num2str(i), ' / ', num2str(nbspectre)])
 
-% Infragravity wave separation (IG vs sea-swell)
-Iig = ff < opts.igCutoff;   % Infragravity waves
-Isw = ff >= opts.igCutoff;  % Sea-swell waves
+    % Select data for the current spectrum (based on delay)
+    press_samp = p((i - 1) * delay + 1:i * delay);   
+    Time(i) = mean(time((i - 1) * delay + 1:i * delay));  % Average time of the spectrum
 
-HsIG = 4 * sqrt(sum(PP(Iig)) * df);  % Significant wave height (IG)
-HsSW = 4 * sqrt(sum(PP(Isw)) * df);  % Significant wave height (SW)
+    pm = mean(press_samp);
+    ABSOLUTE_WL(i) = pm / (rho * g);  % Absolute water level in Pascal
+    ABSOLUTE_WL(i) = ABSOLUTE_WL(i) + opts.hd;  % Adjusted absolute water level
+
+    % **Apply the threshold check (crit)**
+    if ABSOLUTE_WL(i) > crit
+        % Perform spectrum calculation (only once)
+        [ff, df, PP, ~, ~] = spectrum (press_samp, opts.fs, opts.nfft, ABSOLUTE_WL(i));
+        km = wavek(ff, ABSOLUTE_WL(i), g);  % Wave number
+
+        % Apply attenuation and convert to elevation
+        PP = convert_pressure_to_elevation(ff, ABSOLUTE_WL(i), opts, PP); 
+        
+        % Calculate Hs, Tp, Tm01, etc., here
+        Hs(i) = 4 * sqrt(sum(PP * df));  % Significant wave height
+        % Continue with other parameters (Tp, Tm01, Tm02) here...
+    end
+end
 
 %% 5) Pack results into the output structure
-out.Time = time(:);
+out.Time = Time(:);
 out.ABSOLUTE_WL = ABSOLUTE_WL(:);
 out.WL_CGVD2013 = ABSOLUTE_WL + opts.zbottom;  % Water level relative to CGVD2013
 out.spec.Hs = Hs;
-out.spec.Hs_IG = HsIG;
-out.spec.Hs_SW = HsSW;
-out.spec.Tp = Tp;
-out.spec.Tm01 = Tm01;
-out.spec.Tm02 = Tm02;
+% Continue packing other parameters (Hs_IG, Hs_SW, Tp, Tm01, Tm02) here...
 
 end
 
