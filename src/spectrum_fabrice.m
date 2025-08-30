@@ -1,7 +1,5 @@
 % Code to obtain breaking statistics from Richard Manasseh's data
 function [ff, df, PP, fp, Hs] = spectrum_fabrice(e, Fs, nfft, d)
-%clear all
-%close all
 
 z   = e;
 nmes = length(e);
