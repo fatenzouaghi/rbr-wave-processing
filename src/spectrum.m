@@ -1,5 +1,5 @@
 % Code to obtain breaking statistics from Richard Manasseh's data
-function [ff, df, PP, fp, Hs] = spectra (e, Fs, nfft, d)
+function [ff, df, PP, fp, Hs] = spectrum (e, Fs, nfft, d)
 
 z   = e;
 nmes = length(e);
