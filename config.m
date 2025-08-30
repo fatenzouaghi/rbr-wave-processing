@@ -1,20 +1,19 @@
-% config.m - Configuration file for wave analysis parameters
+% config.m — default options (no raw data paths, safe to publish)
+opts_defaults = struct();
 
-% Sampling frequency (Hz)
-opts.fs = 4;
+% Sampling & spectra
+opts_defaults.fs              = 4;        % Hz
+opts_defaults.nfft            = 1024;
+opts_defaults.minFreq         = 0.0083;   % Hz
+opts_defaults.igCutoff        = 0.05;     % Hz (IG < 0.05 Hz)
+opts_defaults.maxFreq         = 0.5;      % Hz
+opts_defaults.use_attenuation = true;
 
-% FFT size
-opts.nfft = 1024;
+% Block length & minimum depth threshold
+opts_defaults.delay_sec       = 60*20;    % 20-minute blocks
+opts_defaults.crit_m          = 0.35;     % minimum ABSOLUTE_WL to compute spectrum (m)
 
-% Use attenuation for pressure to elevation conversion (if applicable) 
-opts.use_attenuation = true;
-
-% Frequency bounds
-opts.minFreq = 0.0083;   % Minimum frequency
-opts.igCutoff = 0.05;    % Infragravity wave cutoff frequency
-opts.maxFreq = 0.5;      % Maximum frequency
-
-% Sensor parameters
-opts.alti = 44.5;   % Altitude of the meteorological station above sea level (meters)
-opts.zmembrane = -1.236;   % Height of the sensor above the bed (meters)
-opts.zbottom = -1.52; % Depth at the bottom (meters)
+% Site/sensor
+opts_defaults.alti      = 44.5;    % m (met station altitude above MSL)
+opts_defaults.zmembrane = -1.236;  % m (sensor membrane elevation)
+opts_defaults.zbottom   = -1.52;   % m (bed elevation)
