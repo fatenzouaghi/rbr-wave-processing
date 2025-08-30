@@ -1,13 +1,6 @@
 ## rbr-wave-processing
-MATLAB scripts for RBR pressure data processing.
+MATLAB scripts for RBR pressure data processing (.rsk files).
 The code corrects atmospheric pressure, computes water levels, and estimates wave parameters (Hs, Tp, Tm01, Tm02, infragravity and sea-swell components).
-## Repository structure
-- `README.md` — project description (this file)
-- `LICENSE` — license (MIT)
-- `CITATION.cff` — citation metadata (GitHub/Zenodo)
-- `config.m` — configuration file (paths, constants)
-- `src/` — MATLAB functions 
-- `docs/code-availability.md` — statement for the manuscript
 
 ## Requirements
 - MATLAB R2013b or later
@@ -16,37 +9,17 @@ The code corrects atmospheric pressure, computes water levels, and estimates wav
 ## Data availability
 
 - **Raw RBR file (.rsk)** used in this study is archived on Zenodo: DOI: 10.5281/zenodo.XXXXXXX  
-- **Meteorological data** for this example are  archived on Zenodo to allow full reproducibility.  
+- **Meteorological data (.csv)** for this example are also archived on Zenodo to allow full reproducibility.  
 
 The original meteorological observations were obtained from the official  
 [Environment and Climate Change Canada portal](https://climat.meteo.gc.ca/historical_data/search_historic_data_f.html).  
-The `meteo.mat` file contains:  
-- `Time_UTC` – time vector in UTC  
-- `Press` – atmospheric pressure in kPa (converted to Pa in the script)  
-- `Temperature` – air temperature in °C  
 
-In this example, the station altitude used for barometric correction is **44.50 m** above sea level (specific to the Grise Fiord station). 
-
-
-## Code availability
-
-The custom MATLAB scripts are mirrored on GitHub:
-GitHub repository: https://github.com/fatenzouaghi/rbr-wave-processing
-
-
-## Citation
-
-If you use this code, please cite:
-
-@software{zouaghi2025rbr,
-  author       = {Zouaghi, Faten},
-  title        = {RBR Wave Processing (MATLAB)},
-  year         = {2025},
-  publisher    = {Zenodo},
-  doi          = {10.5281/zenodo.YYYYYYY},
-  url          = {https://github.com/fatenzouaghi/rbr-wave-processing}
-}
-
+## Usage
+This repository contains MATLAB code to process RBR pressure (.rsk) into wave parameters (HS, Hs_IG, Hs_SW, Tp, Tm01, Tm02, ABSOLUTE_WL, WL_CGVD2013).Further instructions on using the functions are provided via inline comments and function help blocks throughout the code.
+## Author
+**Faten Zouaghi** *(University of Quebec at Rimouski)*  
+ORCID: [0009-0003-0722-4947]((https://orcid.org/0009-0003-0722-4947)  
+Contact: [faten_zouaghi@uqar.ca](mailto:faten_zouaghi@uqar.ca)
 
 ## License
 
