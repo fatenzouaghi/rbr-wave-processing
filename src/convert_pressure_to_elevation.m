@@ -1,12 +1,7 @@
 function PP = convert_pressure_to_elevation(ff, depth_mean, opts, PPp)
 % CONVERT_PRESSURE_TO_ELEVATION
 % Convert pressure spectrum (PPp) to surface elevation spectrum (PP)
-% using linear wave theory pressure response. If opts.use_attenuation is
-% false, apply a simple (rho*g)^-2 scaling.
-%
-%   TF = cosh(k*h) / [cosh(k*z_sensor)] / (rho*g)
-%   PP = PPp * TF^2
-%
+
 % where h = depth_mean, z_sensor = opts.hd (height above bed).
 rho = 1023; g = 9.81;
 
