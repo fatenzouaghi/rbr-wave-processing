@@ -19,7 +19,7 @@ This repository contains MATLAB code to process RBR pressure (.rsk) into wave pa
 
 ## Author
 **Faten Zouaghi** *(University of Quebec at Rimouski)*  
-ORCID: [0009-0003-0722-4947]((https://orcid.org/0009-0003-0722-4947)  
+ORCID: [0009-0003-0722-4947] (https://info.orcid.org/wp-content/uploads/2020/12/orcid_16x16.png)]((https://orcid.org/0009-0003-0722-4947)  
 Contact: [faten_zouaghi@uqar.ca](mailto:faten_zouaghi@uqar.ca)
 
 ## License
