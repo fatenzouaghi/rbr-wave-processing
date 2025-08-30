@@ -1,117 +1,123 @@
 function out = process_rbr_pressure(rskFile, meteoMat, opts)
 % PROCESS_RBR_PRESSURE  End-to-end pipeline for RBR pressure → waves.
 %
+% This function processes the raw pressure data from an RBR sensor and 
+% calculates wave parameters (Hs, Tp, Tm01, Tm02) from the pressure spectra 
+% and meteorological data. 
+%
 % Inputs
-%   rskFile   : path to RBR .rsk
-%   meteoMat  : path to meteo .mat with variables:
+%   rskFile   : path to the .rsk file (RBR sensor data)
+%   meteoMat  : path to the .mat file containing meteorological data with the 
+%               following variables:
 %               - Time_UTC (datetime, UTC)
-%               - Press       (kPa)    [converted to Pa here]
-%               - Temperature (°C)
-%   opts      : struct with fields (defaults in parentheses):
-%               alti (required, m)  – met station altitude above MSL
-%               hd  (required, m)  – sensor Height Above Bed = zmembrane - zfond
-%               fs   (4)            – sampling frequency [Hz]
-%               nfft (1024)         – FFT length
-%               use_attenuation (true) – apply pressure→elevation transfer
-%               minFreq (0.0083), igCutoff (0.05), maxFreq (0.5)
+%               - Press (Pressure in kPa)
+%               - Temperature (Temperature in °C)
+%   opts      : structure with parameters, including the following fields 
+%               (defaults are listed in parentheses):
+%               alti (m)              : meteorological station altitude above sea level (required)
+%               zmembrane (m)         : Sensor height above the bed (zmembrane) (required)
+%               zbottom (m)           : Depth at the bottom (zbottom) (required)
+%               fs   (4)               : Sampling frequency in Hz [optional]
+%               nfft (1024)            : FFT size [optional]
+%               use_attenuation (true): Apply pressure → elevation transfer [optional]
+%               minFreq (0.0083)      : Minimum frequency for spectrum [optional]
+%               igCutoff (0.05)       : Infragravity wave frequency cutoff [optional]
+%               maxFreq (0.5)         : Maximum frequency for spectrum [optional]
 %
-% Output
-%   out.Time      : datetime vector (RBR timestamps)
-%   out.ABSOLUTE_WL     : absolute water level [m]
- %  out.WL_CGVD2013    : water level [relatif to the CGVD2013, m]
-%   out.spec      : struct with spectral results:
-%                   Hs, Hs_IG, Hs_SW, Tp, Tm01, Tm02
-%
+% Outputs
+%   out.Time       : datetime vector of RBR timestamps
+%   out.ABSOLUTE_WL: Absolute water level in meters
+%   out.WL_CGVD2013: Water level relative to CGVD2013 in meters
+%   out.spec       : structure with spectral results:
+%                    Hs, Hs_IG, Hs_SW, Tp, Tm01, Tm02
 %
 % Notes:
-% - Reading .rsk requires RSKtools (RBR): see the official page.
-% - Meteo data in meteo.mat should come from a reliable source (e.g., ECCC).
+% - RSKtools is required to read .rsk files (see official RBR page).
+% - The meteo.mat file should contain reliable meteorological data (e.g., from ECCC).
 
-% ---- defaults (safe fallbacks; values from config.m override them)
-if ~isfield(opts,'fs'),            opts.fs = 4;      end
-if ~isfield(opts,'nfft'),          opts.nfft = 1024; end
-if ~isfield(opts,'use_attenuation'), opts.use_attenuation = true; end
-if ~isfield(opts,'minFreq'),       opts.minFreq = 0.0083;  end
-if ~isfield(opts,'igCutoff'),      opts.igCutoff = 0.05;   end
-if ~isfield(opts,'maxFreq'),       opts.maxFreq = 0.5;     end
+% ---- Load the configuration file with parameters
+run('path_to_config/config.m');  % Adjust path to where your config.m file is located
 
+% If opts is provided, merge with default options from config.m
+if nargin > 2
+    opts = merge_opts(config_opts, opts);  % Merge any provided options with defaults
+end
+
+% Calculate hd (sensor height above the bed)
+opts.hd = opts.zmembrane - opts.zbottom;  % Sensor height above the bed (zmembrane - zbottom)
 
 % Physical constants
-rho = 1023; g = 9.81; R = 8.314; M = 0.02896;
+rho = 1023;  % Density of seawater (kg/m^3)
+g = 9.81;    % Gravitational acceleration (m/s^2)
 
-%% 1) Read RBR time series (absolute pressure) via RSKtools
-RSK  = RSKopen(rskFile);
+%% 1) Read RBR data (.rsk) using RSKtools
+% Load the RBR sensor data using RSKtools
+RSK = RSKopen(rskFile);
 Data = RSKreaddata(RSK);
 time = Data.data.tstamp;
 
-% PRESSURE 
-pRaw = Data.data.values(:,1) * 1e4;   % dbar → Pa
+% Raw pressure data (dbar to Pa conversion)
+pRaw = Data.data.values(:,1) * 1e4;   % Convert from dbar to Pa
 
-%% 2) Load meteo.mat (kPa, °C) and interpolate to RBR time
-S = load(meteoMat);  % expects Time_UTC, Press (kPa), Temperature (°C)
-pAtm = interp1(S.Time_UTC, S.Press*1000, time, 'spline', 'extrap');   % Pa
-Temp = interp1(S.Time_UTC, S.Temperature, time, 'spline', 'extrap');  % °C
+%% 2) Load and interpolate meteorological data to RBR timestamps
+% The .mat file must contain variables: Time_UTC, Press (in kPa), Temperature (°C)
+S = load(meteoMat);  % Load meteorological data
 
-% Barometric leveling (isothermal approximation)
-hs = (R*(Temp + 273.15)) ./ (M*g);         % scale height [m]
-pAtm_corr = pAtm .* exp(opts.alti ./ hs);  % Pa adjusted to sea level
+% Interpolate meteorological data to match RBR timestamps
+pAtm = interp1(S.Time_UTC, S.Press * 1000, time, 'spline', 'extrap');  % Convert pressure to Pa
+Temp = interp1(S.Time_UTC, S.Temperature, time, 'spline', 'extrap');   % Temperature in °C
 
-% Remove atmospheric pressure → gauge-like pressure
-p = pRaw - pAtm_corr;                       % Pa
+% Barometric leveling using isothermal approximation
+hs = (R * (Temp + 273.15)) ./ (M * g);         % Scale height in meters
+pAtm_corr = pAtm .* exp(opts.alti ./ hs);       % Atmospheric pressure corrected to sea level
 
-% Absolute water level: ABSOLUTE_WL = p/(ρg) + hd
-ABSOLUTE_WL = p./(rho*g) + opts.hd;
+% Subtract atmospheric pressure to get gauge pressure (relative to sea level)
+p = pRaw - pAtm_corr;                         % Pressure in Pa
 
-%% 3) Pressure spectrum, then convert to elevation spectrum
-%   [ff, df, PP, fp, Hs] = spectrum (e, Fs, nfft, d)
-% Pass corrected pressure (Pa), fs, nfft, and a depth proxy d:
-h_mean = mean(p)/(rho*g) + opts.hd;   % approximate mean depth used as 'd'
-[ff, df, PPp, ~, ~] = spectrum (p, opts.fs, opts.nfft, h_mean); % PPp: pressure PSD
+% Calculate absolute water level (in meters): H = p / (ρ * g) + hd
+ABSOLUTE_WL = p / (rho * g) + opts.hd;
 
-% PRESSURE → ELEVATION (linear wave theory)
-if opts.use_attenuation
-    k  = wavek(ff, h_mean, g);
-    TF = cosh(k.*h_mean) ./ cosh(k.*opts.hd) / (rho*g)
-    PP = PPp .* (TF.^2);                        % elevation PSD [m^2/Hz]
-else
-    PP = PPp ./ (rho*g).^2;                     
-end
+%% 3) Compute pressure spectrum and convert to elevation spectrum
+% Use the "spectrum" function to calculate the pressure spectrum
+h_mean = mean(p) / (rho * g) + opts.hd;   % Approximate mean depth used as depth proxy
+[ff, df, PPp, ~, ~] = spectrum(p, opts.fs, opts.nfft, h_mean); % Pressure PSD (Power Spectral Density)
 
-% Frequency band selection
-II = (ff >= opts.minFreq & ff <= opts.maxFreq);
-ff = ff(II);  PP = PP(II);
+% Call the function for pressure to elevation conversion
+PP = convert_pressure_to_elevation(ff, h_mean, opts, PPp);
 
-% Robust df (if frequency grid not strictly uniform)
-if numel(ff) > 1
-    df = mean(diff(ff));
-end
+% Select frequency band of interest
+freqRange = (ff >= opts.minFreq & ff <= opts.maxFreq);
+ff = ff(freqRange);
+PP = PP(freqRange);
 
-%% 4) Spectral moments → bulk wave parameters
-m0 = sum(PP)          * df;
-m1 = sum(ff .* PP)    * df;
-m2 = sum((ff.^2) .* PP) * df;
+%% 4) Compute spectral moments and wave parameters
+m0 = sum(PP) * df;           % Zero moment
+m1 = sum(ff .* PP) * df;     % First moment
+m2 = sum((ff .^ 2) .* PP) * df;  % Second moment
 
-Hs   = 4*sqrt(m0);
-[~,pk] = max(PP);  Tp = 1./ff(pk);
-Tm01 = m0 / m1;
-Tm02 = sqrt(m0 / m2);
+Hs = 4 * sqrt(m0);           % Significant wave height
+[~, pk] = max(PP);           % Find the peak frequency
+Tp = 1 / ff(pk);             % Peak period
+Tm01 = m0 / m1;              % Mean period (Tm01)
+Tm02 = sqrt(m0 / m2);       % Mean period (Tm02)
 
-% IG / sea–swell split
-Iig  = ff <  opts.igCutoff;
-Isw  = ff >= opts.igCutoff;
-HsIG = 4*sqrt(sum(PP(Iig)) * df);
-HsSW = 4*sqrt(sum(PP(Isw)) * df);
+% Infragravity wave separation (IG vs sea-swell)
+Iig = ff < opts.igCutoff;   % Infragravity waves
+Isw = ff >= opts.igCutoff;  % Sea-swell waves
 
-%% 5) Pack outputs
-out.Time        = Time(:);
-out.ABSOLUTE_WL       = ABSOLUTE_WL(:);
-out.WL_CGVD2013      = WL_CGVD2013 (:);
-out.spec.Hs     = Hs;
-out.spec.Hs_IG   = Hs_IG;
-out.spec.Hs_SW   = Hs_SW;
-out.spec.Tp     = Tp;
-out.spec.Tm01   = Tm01;
-out.spec.Tm02   = Tm02;
+HsIG = 4 * sqrt(sum(PP(Iig)) * df);  % Significant wave height (IG)
+HsSW = 4 * sqrt(sum(PP(Isw)) * df);  % Significant wave height (SW)
+
+%% 5) Pack results into the output structure
+out.Time = time(:);
+out.ABSOLUTE_WL = ABSOLUTE_WL(:);
+out.WL_CGVD2013 = ABSOLUTE_WL + opts.zbottom;  % Water level relative to CGVD2013
+out.spec.Hs = Hs;
+out.spec.Hs_IG = HsIG;
+out.spec.Hs_SW = HsSW;
+out.spec.Tp = Tp;
+out.spec.Tm01 = Tm01;
+out.spec.Tm02 = Tm02;
 
 end
 
