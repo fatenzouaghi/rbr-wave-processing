@@ -14,7 +14,7 @@ function res = compute_block_spectrum(press_samp, depth_mean, opts)
 
 rho = 1023; g = 9.81;
 
-% 1) Pressure PSD (uses your historical routine)
+% 1) Pressure PSD 
 [ff, df, PPp, ~, ~] = spectrum_fabrice(press_samp, opts.fs, opts.nfft, depth_mean);
 
 % 2) Pressure → elevation via linear wave theory
