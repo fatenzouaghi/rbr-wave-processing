@@ -1,4 +1,4 @@
-function out = process_rbr_pressure(rskFile, meteoMat, opts)
+function out = process_rbr_pressure(rskFile, meteoFile, opts)
 % PROCESS_RBR_PRESSURE  End-to-end pipeline: RBR pressure → wave parameters.
 % - Reads .rsk via RSKtools
 % - Barometric correction using meteo .mat (ECCC)
@@ -8,7 +8,7 @@ function out = process_rbr_pressure(rskFile, meteoMat, opts)
 %
 % Inputs
 %   rskFile   : path to RBR .rsk file
-%   meteoCSV  : path to .csv with variables:
+%   meteoFile  : path to .csv with variables:
 %               - Time_UTC (datetime, UTC)
 %               - Press (kPa)
 %               - Temperature (°C)
@@ -42,17 +42,17 @@ time = Data.data.tstamp;            % datetime (UTC)
 pRaw = Data.data.values(:,1) * 1e4; % dbar → Pa (absolute pressure)
 
 %% -------- 2) Load meteo & barometric leveling ----------
-S = readmatrix(meteoCSV);  % expects: Time_UTC, Press (kPa), Temperature (°C)
-Time_UTC   = S(:,1);         
-Press_kPa  = S(:,2);          % (kPa)
-Temp_C     = S(:,3);          % (°C)
+S = readmatrix(meteoFile);  % expects: Time_UTC, Press (kPa), Temperature (°C)
+Time   = S(:,1);         
+Press  = S(:,2);          % (kPa)
+Temp     = S(:,3);          % (°C)
 
-% Safe fill then interpolate onto RBR timestamps
-Press_Pa = fillmissing(S.Press*1000, 'linear'); % kPa→Pa
-Temp_C   = fillmissing(S.Temperature, 'linear');
+% fill then interpolate onto RBR timestamps
+Press_intrp = fillmissing(Press*1000, 'linear'); 
+Temp_intrp  = fillmissing(Temp, 'linear');
 
-pAtm = interp1(S.Time_UTC, Press_Pa, time, 'spline', 'extrap');  % Pa
-Tmp  = interp1(S.Time_UTC, Temp_C,   time, 'spline', 'extrap');  % °C
+pAtm = interp1(Time, Press_intrp, time, 'spline');  % Pa
+Tmp  = interp1(Time, Temp_intrp,   time, 'spline');  % °C
 
 % Isothermal barometric leveling to sea level
 hs         = (R*(Tmp + 273.15)) ./ (M*g);  % scale height (m)
@@ -66,7 +66,7 @@ ndelay    = max(1, round(opts.delay_sec * opts.fs)); % samples per block
 nbspectre = floor(numel(p) / ndelay);
 
 % Allocate outputs
-Time        = NaT(nbspectre,1);
+Time        = nan(nbspectre,1);
 ABSOLUTE_WL = nan(nbspectre,1);
 WL_CGVD2013 = nan(nbspectre,1);
 Hs          = nan(nbspectre,1);
@@ -112,6 +112,8 @@ out.spec.Tp       = Tp;
 out.spec.Tm01     = Tm01;
 out.spec.Tm02     = Tm02;
 end
+
+
 
 
 
