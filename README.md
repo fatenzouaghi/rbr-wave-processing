@@ -33,8 +33,11 @@ zbottom = -1.597;      % m
 HAB       = zmembrane - bottom;
 alti      = 44.5;        % m (met station altitude for this example)
 
-opts = struct('alti',alti,'HAB',HAB,'use_attenuation',true,'fs',4);
+opts = struct('alti',alti,'HAB',HAB,'fs',4,'nfft',1024, ...
+              'use_attenuation',true,'minFreq',0.0083,'igCutoff',0.05, ...
+              'maxFreq',0.5,'transferStop',0.40);
 out  = process_rbr_pressure("data/206599_20220715_2119.rsk","data/meteo.mat",opts);
+[out.Hs, out.HsIG, out.HsSW, out.Tp, out.Tm01, out.Tm02]
 ```
 ## Data availability
 
