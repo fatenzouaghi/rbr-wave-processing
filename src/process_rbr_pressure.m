@@ -19,7 +19,7 @@ function out = process_rbr_pressure(rskFile, meteoMat, opts)
 %   out.spec = struct('Hs','Hs_IG','Hs_SW','Tp','Tm01','Tm02')
 
 %% -------- 0) Load defaults & merge user opts ----------
-run('config/config.m');                 % defines opts_defaults
+run('config.m');                 % defines opts_defaults
 if nargin < 3 || isempty(opts)
     opts = opts_defaults;
 else
