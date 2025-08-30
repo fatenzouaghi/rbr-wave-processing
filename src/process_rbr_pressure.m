@@ -8,7 +8,7 @@ function out = process_rbr_pressure(rskFile, meteoMat, opts)
 %
 % Inputs
 %   rskFile   : path to RBR .rsk file
-%   meteoMat  : path to .mat with variables:
+%   meteoCSV  : path to .csv with variables:
 %               - Time_UTC (datetime, UTC)
 %               - Press (kPa)
 %               - Temperature (°C)
@@ -42,7 +42,7 @@ time = Data.data.tstamp;            % datetime (UTC)
 pRaw = Data.data.values(:,1) * 1e4; % dbar → Pa (absolute pressure)
 
 %% -------- 2) Load meteo & barometric leveling ----------
-S = load(meteoMat);  % expects: Time_UTC, Press (kPa), Temperature (°C)
+S = load(meteoCSV);  % expects: Time_UTC, Press (kPa), Temperature (°C)
 
 % Safe fill then interpolate onto RBR timestamps
 Press_Pa = fillmissing(S.Press*1000, 'linear'); % kPa→Pa
