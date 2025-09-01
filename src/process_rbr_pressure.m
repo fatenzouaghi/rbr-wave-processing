@@ -55,7 +55,6 @@ nbspectre = floor(numel(p) / ndelay);
 
 % Allocate outputs
 Time        = nan(nbspectre,1);
-WL = nan(nbspectre,1);
 Hs          = nan(nbspectre,1);
 Hs_IG       = nan(nbspectre,1);
 Hs_SW       = nan(nbspectre,1);
