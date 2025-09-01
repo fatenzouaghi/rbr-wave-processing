@@ -15,7 +15,7 @@ function out = process_rbr_pressure(rskFile, meteoFile, opts)
 %   opts      : struct overriding defaults from config/config.m
 %
 % Output (struct)
-%   out.Time, out.ABSOLUTE_WL, out.WL_CGVD2013
+%   out.Time, out.WL
 %   out.spec = struct('Hs','Hs_IG','Hs_SW','Tp','Tm01','Tm02')
 
 %% -------- 0) Load defaults & merge user opts ----------
@@ -67,8 +67,7 @@ nbspectre = floor(numel(p) / ndelay);
 
 % Allocate outputs
 Time        = nan(nbspectre,1);
-ABSOLUTE_WL = nan(nbspectre,1);
-WL_CGVD2013 = nan(nbspectre,1);
+WL = nan(nbspectre,1);
 Hs          = nan(nbspectre,1);
 Hs_IG       = nan(nbspectre,1);
 Hs_SW       = nan(nbspectre,1);
@@ -86,12 +85,12 @@ for i = 1:nbspectre
 
     % Absolute water level at the sensor for this block (m)
     pm              = mean(press_samp);           % Pa
-    ABSOLUTE_WL(i)  = pm/(rho*g) + opts.hd;       % m
-    WL_CGVD2013(i)  = ABSOLUTE_WL(i) + opts.zbottom;
+    WL(i)  = pm/(rho*g) + opts.hd;       % m
+
 
     % Only compute a spectrum if water depth exceeds threshold
-    if ABSOLUTE_WL(i) > opts.crit_m
-        res   = compute_block_spectrum(press_samp, ABSOLUTE_WL(i), opts);
+    if WL(i) > opts.crit_m
+        res   = compute_block_spectrum(press_samp, WL(i), opts);
         Hs(i)    = res.Hs;
         Hs_IG(i) = res.Hs_IG;
         Hs_SW(i) = res.Hs_SW;
@@ -103,8 +102,7 @@ end
 
 %% -------- 5) Package output ----------
 out.Time          = Time(:);
-out.ABSOLUTE_WL   = ABSOLUTE_WL(:);
-out.WL_CGVD2013   = WL_CGVD2013(:);
+out.WL   = WL(:);
 out.spec.Hs       = Hs;
 out.spec.Hs_IG    = Hs_IG;
 out.spec.Hs_SW    = Hs_SW;
