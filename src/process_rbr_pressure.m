@@ -15,7 +15,7 @@ function out = process_rbr_pressure(rskFile, meteoFile, opts)
 %   opts      : struct overriding defaults from config/config.m
 %
 % Output (struct)
-%   out.Time, out.WL
+%   out.Time,
 %   out.spec = struct('Hs','Hs_IG','Hs_SW','Tp','Tm01','Tm02')
 
 %% -------- 0) Load defaults & merge user opts ----------
@@ -102,7 +102,6 @@ end
 
 %% -------- 5) Package output ----------
 out.Time          = Time(:);
-out.WL   = WL(:);
 out.spec.Hs       = Hs;
 out.spec.Hs_IG    = Hs_IG;
 out.spec.Hs_SW    = Hs_SW;
