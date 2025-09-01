@@ -3,20 +3,8 @@ function out = process_rbr_pressure(rskFile, meteoFile, opts)
 % - Reads .rsk via RSKtools
 % - Barometric correction using meteo .mat (ECCC)
 % - Splits the record into fixed-length blocks (delay_sec) and computes spectra
-%   per block via compute_block_spectrum()
+%  via compute_block_spectrum()
 % - Pressure→elevation transfer handled in convert_pressure_to_elevation()
-%
-% Inputs
-%   rskFile   : path to RBR .rsk file
-%   meteoFile  : path to .csv with variables:
-%               - Time_UTC (datetime, UTC)
-%               - Press (kPa)
-%               - Temperature (°C)
-%   opts      : struct overriding defaults from config/config.m
-%
-% Output (struct)
-%   out.Time,
-%   out.spec = struct('Hs','Hs_IG','Hs_SW','Tp','Tm01','Tm02')
 
 %% -------- 0) Load defaults & merge user opts ----------
 run('config.m');                 % defines opts_defaults
