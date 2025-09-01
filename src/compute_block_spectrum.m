@@ -1,16 +1,6 @@
 function res = compute_block_spectrum(press_samp, depth_mean, opts)
-% COMPUTE_BLOCK_SPECTRUM
 % Compute pressure PSD, convert to elevation PSD (optional attenuation),
-% then derive bulk wave parameters for one block.
-%
-% Inputs
-%   press_samp : pressure segment (Pa)
-%   depth_mean : local mean water depth at the sensor (ABSOLUTE_WL, m)
-%   opts       : fs, nfft, minFreq, maxFreq, igCutoff, use_attenuation, hd
-%
-% Output (struct)
-%   res.Hs, res.Hs_IG, res.Hs_SW, res.Tp, res.Tm01, res.Tm02
-%   (plus res.ff, res.df for QA)
+% then derive bulk wave parameters 
 
 rho = 1023; g = 9.81;
 
@@ -42,6 +32,4 @@ Isw        = ff >= opts.igCutoff;
 res.Hs_IG  = 4 * sqrt(sum(PP(Iig)) * df);
 res.Hs_SW  = 4 * sqrt(sum(PP(Isw)) * df);
 
-% Optional: keep for diagnostics
-res.ff = ff; res.df = df;
-end
+
