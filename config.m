@@ -11,7 +11,7 @@ opts_defaults.maxFreq         = 0.5;      % Hz
 
 % Block length & minimum depth threshold
 opts_defaults.delay_sec       = 60*20;    % 20-minute blocks
-opts_defaults.crit_m          = 0.35;     % minimum ABSOLUTE_WL to compute spectrum (m)
+opts_defaults.crit_m          = 0.35;     % minimum WL to compute spectrum (m)
 
 % Site/sensor
 opts_defaults.alti      = 44.5;    % m (station altitude above MSL)
