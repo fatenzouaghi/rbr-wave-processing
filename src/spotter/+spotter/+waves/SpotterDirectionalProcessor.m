@@ -1,5 +1,4 @@
 classdef SpotterDirectionalProcessor
-% rbr.waves.SpotterDirectionalProcessor
 % Directional wave parameters from Spotter displacement CSV.
 %
 % Usage:
@@ -8,7 +7,7 @@ classdef SpotterDirectionalProcessor
 %
 % Alternative :
 %   setenv('SPOTTER_CSV','C:\path\displacement.csv');
-%   out = proc.run();   % lit SPOTTER_CSV
+%   out = proc.run();   % read SPOTTER_CSV
 
     properties (Access=private, Constant)
         DEF = struct('Fs',2.5,'SegLength',3600,'Bandpass',[0.05 0.5], ...
@@ -147,13 +146,13 @@ classdef SpotterDirectionalProcessor
                 vn  = dn(idx);
                 tm(i) = mean(temps(idx));
 
-                [psd_z, fHz, ~, ~] = psd_calc(vz, 1/Fs, nc, ci, win, p);
-                [psd_x, ~,   ~, ~] = psd_calc(ve, 1/Fs, nc, ci, win, p);
-                [psd_y, ~,   ~, ~] = psd_calc(vn, 1/Fs, nc, ci, win, p);
+                [psd_z, fHz, ~, ~] = spotter.signal.psd_calc(vz, 1/Fs, nc, ci, win, p);
+                [psd_x, ~,   ~, ~] =spotter.signal.psd_calc(ve, 1/Fs, nc, ci, win, p);
+                [psd_y, ~,   ~, ~] = spotter.signal.psd_calc(vn, 1/Fs, nc, ci, win, p);
 
-                [csd_xy, ~, ~] = csd_calc(ve, vn, 1/Fs, nc, win, p);
-                [csd_yz, ~, ~] = csd_calc(vn, vz, 1/Fs, nc, win, p);
-                [csd_xz, ~, ~] = csd_calc(ve, vz, 1/Fs, nc, win, p);
+                [csd_xy, ~, ~] = spotter.signal.csd_calc(ve, vn, 1/Fs, nc, win, p);
+                [csd_yz, ~, ~] =spotter.signal.csd_calc(vn, vz, 1/Fs, nc, win, p);
+                [csd_xz, ~, ~] =spotter.signal.csd_calc(ve, vz, 1/Fs, nc, win, p);
 
                 if isempty(ff), ff = fHz(:)'; end
                 Szz(i,:) = psd_z(:)';  Sxx(i,:) = psd_x(:)';  Syy(i,:) = psd_y(:)';
