@@ -1,5 +1,4 @@
 function PP = convert_pressure_to_elevation(ff, depth_mean, opts, PPp)
-% Convert pressure spectrum (PPp) → surface elevation spectrum (PP)
 
 rho = 1023; 
 g   = 9.81;
