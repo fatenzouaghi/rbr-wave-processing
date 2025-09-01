@@ -5,9 +5,9 @@ opts_defaults = struct();
 opts_defaults.fs              = 4;        % Hz
 opts_defaults.nfft            = 1024;
 opts_defaults.minFreq         = 0.0083;   % Hz
-opts_defaults.igCutoff        = 0.05;     % Hz (IG < 0.05 Hz)
+opts_defaults.igCutoff        = 0.05;     % Hz
 opts_defaults.maxFreq         = 0.5;      % Hz
-opts_defaults.use_attenuation = true;
+
 
 % Block length & minimum depth threshold
 opts_defaults.delay_sec       = 60*20;    % 20-minute blocks
