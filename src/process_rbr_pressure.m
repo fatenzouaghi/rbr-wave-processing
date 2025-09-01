@@ -30,7 +30,7 @@ time = Data.data.tstamp;            % datetime (UTC)
 pRaw = Data.data.values(:,1) * 1e4; % dbar → Pa (absolute pressure)
 
 %% -------- 2) Load meteo & barometric leveling ----------
-S = readmatrix(meteoFile);  % expects: Time_UTC, Press (kPa), Temperature (°C)
+S = readmatrix(meteoFile); 
 Time   = S(:,1);         
 Press  = S(:,2);          
 Temp     = S(:,3);          
