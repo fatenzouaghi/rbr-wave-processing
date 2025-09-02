@@ -1,5 +1,5 @@
-## rbr-wave-processing
-MATLAB scripts for RBR pressure data processing (.rsk files).
+## CoastalWaves
+MATLAB scripts for wave processing from RBR pressure loggers (.rsk) and Spotter buoys (.csv).
 The code corrects atmospheric pressure, computes water levels, and estimates wave parameters (Hs, Tp, Tm01, Tm02, infragravity and sea-swell components).
 
 ## Requirements
@@ -8,14 +8,14 @@ The code corrects atmospheric pressure, computes water levels, and estimates wav
 
 ## Data availability
 
-- **Raw RBR file (.rsk)** used in this study is archived on Zenodo: DOI: 10.5281/zenodo.XXXXXXX  
-- **Meteorological data (.csv)** for this project are also archived on Zenodo to allow full reproducibility.  
+- All datasets used in this study—RBR raw files (.rsk), Spotter buoy files (.csv), and meteorological data (.csv)—are archived on Zenodo (DOI: 10.5281/zenodo.XXXXXXX
+).
 
 The original meteorological observations were obtained from the official  
 [Environment and Climate Change Canada portal](https://climat.meteo.gc.ca/historical_data/search_historic_data_f.html).  
 
 ## Usage
-This repository contains MATLAB code to process RBR pressure (.rsk) into wave parameters (HS, Hs_IG, Hs_SW, Tp, Tm01, Tm02) and water levels (ABSOLUTE_WL, WL_CGVD2013). Further instructions on using the functions are provided via inline comments and function help blocks throughout the code.
+This repository provides MATLAB classes and functions to process raw wave data from RBR pressure loggers (.rsk) and Spotter buoys (.csv). Inline comments describe the processing steps.
 
 ## Author
 **Faten Zouaghi** *(University of Quebec at Rimouski)*  
