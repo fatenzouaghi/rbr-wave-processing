@@ -1,14 +1,6 @@
 classdef SpotterDirectionalProcessor
 % Directional wave parameters from Spotter displacement CSV.
 %
-% Usage:
-%   proc = rbr.waves.SpotterDirectionalProcessor();
-%   out  = proc.run('CSV', csvPath, 'Fs', 2.5, 'SegLength', 3600, 'Bandpass', [0.1 1]);
-%
-% Alternative :
-%   setenv('SPOTTER_CSV','C:\path\displacement.csv');
-%   out = proc.run();   % read SPOTTER_CSV
-
     properties (Access=private, Constant)
         DEF = struct('Fs',2.5,'SegLength',3600,'Bandpass',[0.05 0.5], ...
                      'Ncvec',8,'CI',95,'Window',"hanning",'P',0);
