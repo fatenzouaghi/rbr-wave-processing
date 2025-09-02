@@ -4,22 +4,6 @@
 classdef RBRPressureProcessor
 % RBRPressureProcessor
 % End-to-end pipeline: RBR pressure (.rsk) + meteo CSV -> wave time series.
-%
-% Requirements
-%   - RSKtools installed and on the MATLAB path (RSKopen/RSKreaddata). 
-%   - Meteo File
-%   - Rsk File
-%
-% Output fields (per spectral block):
-%   out.Time           : block-center time (datenum)
-%   out.ABSOLUTE_WL    : absolute WL [m] = p/(rho*g) + hd
-%   out.WL_CGVD2013    : ABSOLUTE_WL + zbottom
-%   out.spec.Hs        : significant wave height (total)
-%   out.spec.Hs_IG     : infragravity Hs (ff < igCutoff)
-%   out.spec.Hs_SW     : sea–swell Hs (ff >= igCutoff)
-%   out.spec.Tp        : peak period [s]
-%   out.spec.Tm01      : mean period m0/m1 [s]
-%   out.spec.Tm02      : mean period sqrt(m0/m2) [s]
 
 properties (Constant)
     rho   = 1023;    % seawater density [kg/m^3]
@@ -28,7 +12,7 @@ properties (Constant)
     M_air = 0.02896; % dry-air molar mass [kg/mol]
 end
 
-% --- No site-specific defaults: user MUST provide these (or env vars) ---
+% --- No site-specific defaults: Specify values per deployment/data.
 properties
     fs        (1,1) double = NaN;   % sampling frequency [Hz]
     nfft      (1,1) double = NaN;   % FFT length
@@ -94,10 +78,10 @@ methods
         hs = (obj.R_gas*(T_interp + 273.15)) ./ (obj.M_air * obj.g); % scale height [m]
         p_atm_corr = p_atm_interp .* exp(A.alti ./ hs);               % adjusted to MSL
 
-        % Gauge-like pressure
+        % Gauge pressure
         p_gauge = p_raw_Pa - p_atm_corr;                              % Pa
 
-        % ---- 3) Block spectra & bulk parameters ----
+        % ---- 3)  spectra & bulk parameters ----
         ndelay  = round(obj.windowSec * obj.fs);
         nBlocks = floor(numel(p_gauge) / ndelay);
 
@@ -112,7 +96,7 @@ methods
 
             TimeB(ii) = mean(tt);
             pm        = mean(segP);
-            ABS_WL(ii)= pm/(obj.rho*obj.g) + hd;      % absolute WL for the block
+            ABS_WL(ii)= pm/(obj.rho*obj.g) + hd;      % absolute WL 
             WL_CG(ii) = ABS_WL(ii) + A.zbottom;
 
             if ABS_WL(ii) <= obj.critWL
