@@ -33,12 +33,12 @@ classdef SpotterDirectionalProcessor
             if ~isempty(A.sample_rate), A.Fs = A.sample_rate; end
             if ~isempty(A.window_sec),  A.SegLength = A.window_sec; end
 
-            % ---- Expert-only fallbacks: ENV → MATLAB preferences ----
+        -
             A.CSV       = obj.i_envOr(A.CSV,      'SPOTTER_CSV');
             A.Fs        = obj.i_envOrNum(A.Fs,    'SPOTTER_FS');
             A.SegLength = obj.i_envOrNum(A.SegLength,'SPOTTER_SEGSEC');
             A.Bandpass  = obj.i_envOrPair(A.Bandpass,'SPOTTER_BAND');   % e.g. "0.05,0.5"
-            A.Ncvec     = obj.i_envOrVec(A.Ncvec, 'SPOTTER_NCVEC');     % e.g. "8" or "4,8,12"
+            A.Ncvec     = obj.i_envOrVec(A.Ncvec, 'SPOTTER_NCVEC');   
             A.CI        = obj.i_envOrNum(A.CI,    'SPOTTER_CI');
             A.Window    = obj.i_envOr(A.Window,   'SPOTTER_WINDOW');
             A.P         = obj.i_envOrNum(A.P,     'SPOTTER_P');
@@ -51,7 +51,7 @@ classdef SpotterDirectionalProcessor
             A.Window    = obj.i_prefOr('spotter','Window',A.Window);
             A.P         = obj.i_prefOr('spotter','P',A.P);
 
-            % ---- Guards (blocks non-expert usage) ----
+        
             assert(~isempty(A.CSV) && isfile(A.CSV), ...
                 'CSV file not provided or not found (set ''CSV'' or SPOTTER_CSV).');
             missing = {};
@@ -64,7 +64,7 @@ classdef SpotterDirectionalProcessor
             end
             assert(isempty(missing), 'Missing required settings: %s', strjoin(missing, ', '));
 
-            % Required dependencies (kept under package for obscurity)
+    
             assert(exist('spotter.signal.psd','file')==2, 'Missing dependency: src/+spotter/+signal/psd.m');
             assert(exist('spotter.signal.csd','file')==2, 'Missing dependency: src/+spotter/+signal/csd.m');
 
@@ -74,7 +74,7 @@ classdef SpotterDirectionalProcessor
             % ---- 2) Band-pass filter on all components ----
             [de, dn, dz] = obj.bandpassAll(de, dn, dz, A.Fs, A.Bandpass);
 
-            % ---- 3) Block-wise spectra & cross-spectra ----
+            % ---- 3) spectra ----
             [tm, ff, Szz, Sxx, Syy, Sxy, Qyz, Qxz] = obj.blockSpectra( ...
                 t_num, de, dn, dz, A.Fs, A.SegLength, A.Ncvec, A.CI, string(A.Window), A.P);
 
@@ -131,7 +131,7 @@ classdef SpotterDirectionalProcessor
 
     methods (Access=private)
         function [t_num, de, dn, dz] = readAndRegularize(~, csvPath, Fs)
-            % Read raw Spotter displacement CSV and regularize at Fs Hz.
+            % Read raw Spotter CSV 
             T = readtable(csvPath);
             A = table2array(T);
             yr=A(:,1); mo=A(:,2); da=A(:,3); hh=A(:,4); mm=A(:,5); ss=A(:,6); ms=A(:,7);
