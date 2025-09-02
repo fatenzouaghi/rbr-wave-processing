@@ -113,10 +113,10 @@ methods
             WL_CG(ii) = ABS_WL(ii) + A.zbottom;
 
             if ABS_WL(ii) <= obj.critWL
-                continue;  % instrument likely emerged; skip spectrum
+                continue;  % instrument likely emerged
             end
 
-            % Pressure PSD via your routine (Pa^2/Hz)
+            % Pressure PSD 
             [ff, df, PP, ~, ~] = rbr.signal.spectrum_fabrice(segP, obj.fs, obj.nfft, ABS_WL(ii));
 
             % Frequency band selection
