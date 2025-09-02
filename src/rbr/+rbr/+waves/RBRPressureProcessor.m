@@ -1,3 +1,6 @@
+@Date    : 2025-09-02
+@Author  : Faten Zouaghi (faten_zouaghi@uqar.ca)
+
 classdef RBRPressureProcessor
 % RBRPressureProcessor
 % End-to-end pipeline: RBR pressure (.rsk) + meteo CSV -> wave time series.
