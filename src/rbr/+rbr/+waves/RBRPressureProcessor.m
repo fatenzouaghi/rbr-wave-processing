@@ -1,166 +1,140 @@
 classdef RBRPressureProcessor
 % RBRPressureProcessor
-% End-to-end pipeline: RBR pressure (.rsk) + meteo CSV -> wave time series
+% End-to-end pipeline: RBR pressure (.rsk) + meteo CSV -> wave time series.
 %
-% Required external tool: RSKtools (RBR).
-%   RSK = RSKopen('file.rsk'); RSK = RSKreaddata(RSK); etc.
-%   (Install and add RSKtools to the MATLAB path before running.) 
+% Requirements
+%   - RSKtools installed and on the MATLAB path (RSKopen/RSKreaddata). 
+%   - Meteo File
+%   - Rsk File
 %
-% Outputs (per spectral block):
-%   Time               : block-center time (datenum)
-%   ABSOLUTE_WL        : absolute water level [m] (p/(rho*g) + hd)
-%   WL_CGVD2013        : absolute WL relative to chart datum (ABSOLUTE_WL + zbottom)
-%   Hs, Hs_IG, Hs_SW   : significant wave heights (total, infragravity, sea-swell)
-%   Tp, Tm01, Tm02     : peak and mean wave periods
-%
-% Notes:
-% - Meteo CSV must have 3 numeric columns: Time_UTC (MATLAB datenum), 
-%   Press (kPa), Temperature (degC). No conversion to datetime is performed.
-% - No dynamic pressure attenuation correction is applied; elevation PSD is
-%   obtained by dividing pressure PSD by (rho*g)^2 (hydrostatic). 
-%   You can later swap in a transfer function if desired.
-%
-% Author: (you)
+% Output fields (per spectral block):
+%   out.Time           : block-center time (datenum)
+%   out.ABSOLUTE_WL    : absolute WL [m] = p/(rho*g) + hd
+%   out.WL_CGVD2013    : ABSOLUTE_WL + zbottom
+%   out.spec.Hs        : significant wave height (total)
+%   out.spec.Hs_IG     : infragravity Hs (ff < igCutoff)
+%   out.spec.Hs_SW     : sea–swell Hs (ff >= igCutoff)
+%   out.spec.Tp        : peak period [s]
+%   out.spec.Tm01      : mean period m0/m1 [s]
+%   out.spec.Tm02      : mean period sqrt(m0/m2) [s]
 
 properties (Constant)
-    rho = 1023;                 % seawater density [kg/m^3]
-    g   = 9.81;                 % gravity [m/s^2]
-    R_gas = 8.314;              % [J/(mol*K)]
-    M_air = 0.02896;            % [kg/mol]
+    rho   = 1023;    % seawater density [kg/m^3]
+    g     = 9.81;    % gravity [m/s^2]
+    R_gas = 8.314;   % molar gas constant [J/(mol*K)]
+    M_air = 0.02896; % dry-air molar mass [kg/mol]
 end
 
+% --- No site-specific defaults: user MUST provide these (or env vars) ---
 properties
-    fs = 4;                     % sampling frequency [Hz]
-    nfft = 1024;                % FFT length
-    minFreq = 0.0083;           % Hz
-    maxFreq = 0.5;              % Hz
-    igCutoff = 0.05;            % Hz (IG vs sea-swell split)
-    windowSec = 20*60;          % one spectrum every 20 min
-    critWL = 0.35;              % minimum water depth to accept a spectrum [m]
+    fs        (1,1) double = NaN;   % sampling frequency [Hz]
+    nfft      (1,1) double = NaN;   % FFT length
+    minFreq   (1,1) double = NaN;   % Hz
+    maxFreq   (1,1) double = NaN;   % Hz
+    igCutoff  (1,1) double = NaN;   % Hz (IG vs sea–swell split)
+    windowSec (1,1) double = NaN;   % seconds (block length)
+    critWL    (1,1) double = NaN;   % m (min WL to accept a spectrum)
 end
 
 methods
     function out = run(obj, varargin)
-        % RUN  Compute wave parameters from an RBR .rsk and a meteo CSV.
-        %
-        % Usage:
-        %   proc = rbr.waves.RBRPressureProcessor;
-        %   out  = proc.run('RSK','C:\data\file.rsk', ...
-        %                   'MeteoCSV','C:\data\METEO.csv', ...
-        %                   'alti',44.5,'zmembrane',-1.236,'zbottom',-1.52);
-        %
-        % Name-Value:
-        %   'RSK'       : path to RBR .rsk
-        %   'MeteoCSV'  : path to meteo CSV (Time_UTC, Press[kPa], Temperature[°C])
-        %   'alti'      : met station altitude above MSL [m]
-        %   'zmembrane' : sensor membrane elevation [m]
-        %   'zbottom'   : bottom elevation [m]
-        %   (optional overrides) 'fs','nfft','minFreq','maxFreq','igCutoff','windowSec','critWL'
+        ip = inputParser;
+        addParameter(ip,'RSK','',@(s)ischar(s)||isstring(s));
+        addParameter(ip,'MeteoCSV','',@(s)ischar(s)||isstring(s));
+        addParameter(ip,'alti',[],@isnumeric);
+        addParameter(ip,'zmembrane',[],@isnumeric);
+        addParameter(ip,'zbottom',[],@isnumeric);
+        addParameter(ip,'fs',[],@isnumeric);
+        addParameter(ip,'nfft',[],@isnumeric);
+        addParameter(ip,'minFreq',[],@isnumeric);
+        addParameter(ip,'maxFreq',[],@isnumeric);
+        addParameter(ip,'igCutoff',[],@isnumeric);
+        addParameter(ip,'windowSec',[],@isnumeric);
+        addParameter(ip,'critWL',[],@isnumeric);
+        parse(ip,varargin{:});
+        A = ip.Results;
 
-        p = inputParser;
-        addParameter(p,'RSK','',@(s)ischar(s)||isstring(s));
-        addParameter(p,'MeteoCSV','',@(s)ischar(s)||isstring(s));
-        addParameter(p,'alti',[],@isnumeric);
-        addParameter(p,'zmembrane',[],@isnumeric);
-        addParameter(p,'zbottom',[],@isnumeric);
-        addParameter(p,'fs',obj.fs,@isnumeric);
-        addParameter(p,'nfft',obj.nfft,@isnumeric);
-        addParameter(p,'minFreq',obj.minFreq,@isnumeric);
-        addParameter(p,'maxFreq',obj.maxFreq,@isnumeric);
-        addParameter(p,'igCutoff',obj.igCutoff,@isnumeric);
-        addParameter(p,'windowSec',obj.windowSec,@isnumeric);
-        addParameter(p,'critWL',obj.critWL,@isnumeric);
-        parse(p,varargin{:});
-        args = p.Results;
+        % Allow environment variables as a subtle “expert gate”
+        if isempty(A.RSK),      A.RSK      = getenv('RBR_RSK');    end
+        if isempty(A.MeteoCSV), A.MeteoCSV = getenv('RBR_METEO');  end
+        assert(~isempty(A.RSK)      && exist(A.RSK,'file')==2, 'RSK file not found.');
+        assert(~isempty(A.MeteoCSV) && exist(A.MeteoCSV,'file')==2, 'Meteo CSV not found.');
+        assert(~isempty(A.alti) && ~isempty(A.zmembrane) && ~isempty(A.zbottom), ...
+               'Provide alti, zmembrane, zbottom.');
 
-        % allow env vars as a fallback (adds a tiny barrier for non-experts)
-        if isempty(args.RSK),      args.RSK      = getenv('RBR_RSK');     end
-        if isempty(args.MeteoCSV), args.MeteoCSV = getenv('RBR_METEO');   end
-        assert(~isempty(args.RSK) && exist(args.RSK,'file')==2, 'RSK file not found.');
-        assert(~isempty(args.MeteoCSV) && exist(args.MeteoCSV,'file')==2, 'Meteo CSV not found.');
-        assert(~isempty(args.alti) && ~isempty(args.zmembrane) && ~isempty(args.zbottom), ...
-            'Provide alti, zmembrane, zbottom.');
+        % Inject user/ENV values into properties (remain NaN if not set)
+        obj.fs        = obj.localFromEnvOrArg('RBR_FS',        A.fs);
+        obj.nfft      = obj.localFromEnvOrArg('RBR_NFFT',      A.nfft);
+        obj.minFreq   = obj.localFromEnvOrArg('RBR_MINFREQ',   A.minFreq);
+        obj.maxFreq   = obj.localFromEnvOrArg('RBR_MAXFREQ',   A.maxFreq);
+        obj.igCutoff  = obj.localFromEnvOrArg('RBR_IGCUTOFF',  A.igCutoff);
+        obj.windowSec = obj.localFromEnvOrArg('RBR_WINDOWSEC', A.windowSec);
+        obj.critWL    = obj.localFromEnvOrArg('RBR_CRITWL',    A.critWL);
 
-        % allow runtime overrides
-        obj.fs       = args.fs;
-        obj.nfft     = args.nfft;
-        obj.minFreq  = args.minFreq;
-        obj.maxFreq  = args.maxFreq;
-        obj.igCutoff = args.igCutoff;
-        obj.windowSec= args.windowSec;
-        obj.critWL   = args.critWL;
+        % Require that all are now defined
+        missing = {'fs','nfft','minFreq','maxFreq','igCutoff','windowSec','critWL'};
+        missing = missing(cellfun(@(f) isnan(obj.(f)), missing));
+        assert(isempty(missing), 'Missing required parameters: %s', strjoin(missing, ', '));
 
-        hd = args.zmembrane - args.zbottom;     % sensor height above bed
+        % Geometry
+        hd = A.zmembrane - A.zbottom; % sensor height above bed
 
-        % ---- 1) read RBR .rsk (absolute pressure) ----
-        [t_rbr_num, p_raw_Pa] = obj.readRSKpressure(args.RSK);   % numeric datenum, Pa
+        % ---- 1) RBR .rsk (absolute pressure) ----
+        [t_rbr_num, p_raw_Pa] = obj.readRSKpressure(A.RSK);    % numeric datenum, Pa
 
-        % ---- 2) read meteo CSV and barometric correction ----
-        [t_met_num, p_atm_kPa, T_C] = obj.readMeteoCSV(args.MeteoCSV);
-        p_atm_Pa = p_atm_kPa * 1000;                         % kPa -> Pa
-        p_atm_Pa = obj.fillmissing_linear(p_atm_Pa);         % simple interp for gaps
-
-        % interpolate meteo to RBR times (both are numeric datenums)
+        % ---- 2) Meteo CSV & barometric leveling (isothermal) ----
+        [t_met_num, p_atm_kPa, T_C] = obj.readMeteoCSV(A.MeteoCSV);
+        p_atm_Pa = obj.fillmissing_linear(p_atm_kPa*1000);     % kPa->Pa + fill gaps
         p_atm_interp = interp1(t_met_num, p_atm_Pa, t_rbr_num, 'spline', 'extrap');
         T_interp     = interp1(t_met_num, T_C,      t_rbr_num, 'spline', 'extrap');
 
-        % hypsometric adjustment to sea level (isothermal)
-        hs = (obj.R_gas*(T_interp + 273.15)) ./ (obj.M_air * obj.g);    % [m]
-        p_atm_corr = p_atm_interp .* exp(args.alti ./ hs);               % Pa
+        hs = (obj.R_gas*(T_interp + 273.15)) ./ (obj.M_air * obj.g); % scale height [m]
+        p_atm_corr = p_atm_interp .* exp(A.alti ./ hs);               % adjusted to MSL
 
-        % remove atmospheric pressure -> (quasi) gauge pressure
-        p_gauge = p_raw_Pa - p_atm_corr;                                 % Pa
+        % Gauge-like pressure
+        p_gauge = p_raw_Pa - p_atm_corr;                              % Pa
 
-        % ---- 3) block processing & spectra ----
-        ndelay    = round(obj.windowSec * obj.fs);
-        nBlocks   = floor(numel(p_gauge) / ndelay);
+        % ---- 3) Block spectra & bulk parameters ----
+        ndelay  = round(obj.windowSec * obj.fs);
+        nBlocks = floor(numel(p_gauge) / ndelay);
 
-        Hs    = nan(nBlocks,1);
-        Tp    = nan(nBlocks,1);
-        Tm01  = nan(nBlocks,1);
-        Tm02  = nan(nBlocks,1);
-        Hs_IG = nan(nBlocks,1);
-        Hs_SW = nan(nBlocks,1);
-        TimeB = nan(nBlocks,1);              % block-center time (datenum)
-        ABS_WL= nan(nBlocks,1);              % absolute WL per block
-        WL_CG = nan(nBlocks,1);
+        Hs = nan(nBlocks,1); Hs_IG = Hs; Hs_SW = Hs;
+        Tp = Hs; Tm01 = Hs; Tm02 = Hs;
+        TimeB = nan(nBlocks,1); ABS_WL = TimeB; WL_CG = TimeB;
 
         for ii = 1:nBlocks
             idx  = (1:ndelay) + (ii-1)*ndelay;
             segP = p_gauge(idx);
             tt   = t_rbr_num(idx);
+
             TimeB(ii) = mean(tt);
+            pm        = mean(segP);
+            ABS_WL(ii)= pm/(obj.rho*obj.g) + hd;      % absolute WL for the block
+            WL_CG(ii) = ABS_WL(ii) + A.zbottom;
 
-            % mean absolute WL for the block (p/(rho*g) + hd)
-            pm = mean(segP);
-            ABS_WL(ii) = pm/(obj.rho*obj.g) + hd;
-            WL_CG(ii)  = ABS_WL(ii) + args.zbottom;
+            if ABS_WL(ii) <= obj.critWL
+                continue;  % instrument likely emerged; skip spectrum
+            end
 
-            % skip if instrument emerges (threshold)
-            if ABS_WL(ii) <= obj.critWL,  continue;  end
-
-            % spectrum of pressure (Pa^2/Hz) using your routine
-            % spectrum_fabrice MUST be available as rbr.signal.spectrum_fabrice
+            % Pressure PSD via your routine (Pa^2/Hz)
             [ff, df, PP, ~, ~] = rbr.signal.spectrum_fabrice(segP, obj.fs, obj.nfft, ABS_WL(ii));
 
-            % band selection
-            mask = (ff >= obj.minFreq) & (ff <= obj.maxFreq);
-            ff = ff(mask);   PP = PP(mask);
-
-            % pressure -> elevation PSD (hydrostatic)
-            % (No dynamic transfer function; strictly divide by (rho*g)^2)
-            PP = PP ./ (obj.rho*obj.g).^2;      % [m^2/Hz]
-
+            % Frequency band selection
+            m = (ff >= obj.minFreq) & (ff <= obj.maxFreq);
+            ff = ff(m); PP = PP(m);
             if isempty(ff), continue; end
 
-            % bulk parameters
+            % Hydrostatic conversion: pressure -> elevation PSD
+            PP = PP ./ (obj.rho*obj.g).^2;           % [m^2/Hz]
+
+            % Bulk wave parameters
             [Hs(ii), Tp(ii), Tm01(ii), Tm02(ii), Hs_IG(ii), Hs_SW(ii)] = ...
                 obj.bulkParams(ff, PP, df, obj.igCutoff);
         end
 
         % ---- pack outputs ----
         out = struct();
-        out.Time            = TimeB;                 % datenum
+        out.Time            = TimeB;
         out.ABSOLUTE_WL     = ABS_WL;
         out.WL_CGVD2013     = WL_CG;
         out.spec.Hs         = Hs;
@@ -177,56 +151,69 @@ methods
         out.meta.windowSec  = obj.windowSec;
         out.meta.critWL     = obj.critWL;
         out.meta.hd         = hd;
-        out.meta.alti       = args.alti;
-        out.meta.zmembrane  = args.zmembrane;
-        out.meta.zbottom    = args.zbottom;
+        out.meta.alti       = A.alti;
+        out.meta.zmembrane  = A.zmembrane;
+        out.meta.zbottom    = A.zbottom;
     end
 end
 
 methods (Access = private)
-
     function [t_num, p_Pa] = readRSKpressure(~, rskFile)
-        % Read pressure time series from an RBR .rsk using RSKtools.
+        % Read RBR .rsk with RSKtools.
         RSK  = RSKopen(rskFile);
         Data = RSKreaddata(RSK);
         t    = Data.data.tstamp;
         if isdatetime(t), t_num = datenum(t); else, t_num = t; end
         v    = Data.data.values;
-        p_Pa = v(:,1) * 1e4;         % RBR pressure channel in dbar -> Pa
+        p_Pa = v(:,1) * 1e4;      % dbar -> Pa
     end
 
     function [t_num, p_kPa, T_C] = readMeteoCSV(~, csvPath)
-        % Read meteo CSV (numeric matrix): [Time_UTC, Press(kPa), Temperature(C)]
+        % Read meteo CSV: [Time_UTC, Press(kPa), Temperature(°C)] as numeric matrix
         A = readmatrix(csvPath);
-        assert(size(A,2)>=3, 'Meteo CSV must have 3 columns (Time, Press, Temp).');
-        t_num = A(:,1);                 % already MATLAB serial time
-        p_kPa = A(:,2);                 % kPa
-        T_C   = A(:,3);                 % degC
+        assert(size(A,2) >= 3, 'Meteo CSV must have 3 columns (Time, Press, Temp).');
+        t_num = A(:,1); p_kPa = A(:,2); T_C = A(:,3);
     end
 
     function x = fillmissing_linear(~, x)
-        % Fill NaNs by linear interpolation (endpoints held)
         idx = isnan(x);
         if any(idx)
-            xi  = find(~idx);
-            x   = interp1(xi, x(~idx), 1:numel(x), 'linear', 'extrap').';
+            xi = find(~idx);
+            x  = interp1(xi, x(~idx), 1:numel(x), 'linear', 'extrap').';
         end
     end
 
     function [Hs, Tp, Tm01, Tm02, HsIG, HsSW] = bulkParams(~, ff, PP, df, igCut)
-        % Spectral moments and bulk wave parameters from elevation PSD.
-        m0 = sum(PP)       * df;
-        m1 = sum(ff.*PP)   * df;
-        m2 = sum(ff.^2.*PP)* df;
+        m0 = sum(PP)        * df;
+        m1 = sum(ff.*PP)    * df;
+        m2 = sum(ff.^2.*PP) * df;
+        Hs   = 4*sqrt(m0);
+        [~,pk] = max(PP);   Tp = 1/ff(pk);
+        Tm01 = m0/max(m1,eps);
+        Tm02 = sqrt(m0/max(m2,eps));
+        Iig  = ff < igCut;
+        HsIG = 4*sqrt(sum(PP(Iig))*df);
+        HsSW = 4*sqrt(sum(PP(~Iig))*df);
+    end
 
-        Hs    = 4*sqrt(m0);
-        [~,pk]= max(PP);            Tp = 1/ff(pk);
-        Tm01  = m0/max(m1,eps);
-        Tm02  = sqrt(m0/max(m2,eps));
-
-        Iig   = ff < igCut;
-        HsIG  = 4*sqrt(sum(PP(Iig))*df);
-        HsSW  = 4*sqrt(sum(PP(~Iig))*df);
+    function val = localFromEnvOrArg(~, envName, argVal)
+        % If argVal is empty/NaN, try environment variable (string) then str2double
+        if ~isempty(argVal), val = argVal; return; end
+        s = getenv(envName);
+        if isempty(s)
+            val = NaN;
+        else
+            tmp = str2double(s);
+            val = tmp;
+            if isnan(val) && ~isempty(s)
+                % allow non-numeric env for some future cases
+                val = NaN;
+            end
+        end
     end
 end
 end
+
+
+
+    
