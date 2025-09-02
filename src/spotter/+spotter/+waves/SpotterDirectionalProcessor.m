@@ -7,7 +7,7 @@ classdef SpotterDirectionalProcessor
 %
 
     properties (Access=private, Constant)
-        % Required keys: no embedded numeric defaults. User must supply them.
+        % Required keys: no embedded numeric defaults. Specify values per deployment/data.
         REQ_KEYS = {'Fs','SegLength','Bandpass','Ncvec','CI','Window','P'};
     end
 
