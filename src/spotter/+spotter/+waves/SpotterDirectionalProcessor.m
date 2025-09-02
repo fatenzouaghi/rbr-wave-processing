@@ -1,8 +1,10 @@
+@Date    : 2025-09-02
+@Author  : Faten Zouaghi (faten_zouaghi@uqar.ca)
+
 classdef SpotterDirectionalProcessor < handle
 %SPOTTERDIRECTIONALPROCESSOR
 % Directional wave parameters computed from Spotter raw SD-card CSV files.
-@Date    : 2025-09-02
-@Author  : Faten Zouaghi (faten_zouaghi@uqar.ca)
+
     properties (Access=private, Constant)
         % Hidden defaults (overridable by args or env vars)
         DEF = struct( ...
