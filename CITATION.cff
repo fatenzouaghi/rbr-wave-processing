@@ -1,13 +1,13 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 type: software
-title: "RBR Wave Processing"
+title: "Costal Wave Processing"
 authors:
   - family-names: Zouaghi
     given-names: Faten
     orcid: https://orcid.org/0009-0003-0722-4947
 version: "1.0.0"
 date-released: "2025-08-30"
-repository-code: "https://github.com/fatenzouaghi/rbr-wave-processing"
-url: "https://github.com/fatenzouaghi/rbr-wave-processing"
+repository-code: "https://github.com/fatenzouaghi/CoastalWaves"
+url: "https://github.com/fatenzouaghi/CoastalWaves"
 license: Apache-2.0 
