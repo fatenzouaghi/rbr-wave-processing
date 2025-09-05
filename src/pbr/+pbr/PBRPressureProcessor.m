@@ -1,3 +1,6 @@
+@Date    : 2025-09-02
+@Author  : Faten Zouaghi (faten_zouaghi@uqar.ca)
+
 classdef PBRPressureBurstProcessor
 % PBRPressureBurstProcessor
 % Wave processing for DIY PBR pressure sensors:
