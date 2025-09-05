@@ -5,8 +5,6 @@ classdef PBRPressureBurstProcessor
 % PBRPressureBurstProcessor
 % Wave processing for DIY PBR pressure sensors:
 
-%   * No embedded numeric defaults: user MUST supply values via name–value or ENV.
-
 
     properties (Constant, Access=private)
         rho   = 1023;    % seawater density [kg/m^3]
