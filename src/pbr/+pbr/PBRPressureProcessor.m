@@ -28,25 +28,6 @@ classdef PBRPressureBurstProcessor
     methods
         function out = run(obj, varargin)
             % RUN  Execute the full PBR pipeline 
-            %
-            % Required (name–value OR ENV):
-            %   'PBRDir'     or env PBR_DIR        : directory with *.txt
-            %   'MeteoCSV'   or env PBR_METEO      : 
-            %   'alti'       or env PBR_ALTI       : station altitude above MSL [m]
-            %   'zmembrane'  or env PBR_ZMEMBRANE  : sensor membrane Z [m]
-            %   'zbottom'    or env PBR_ZBOTTOM    : bottom Z [m]
-            %   'fs'         or env PBR_FS         : Hz
-            %   'nfft'       or env PBR_NFFT
-            %   'minFreq'    or env PBR_MINFREQ
-            %   'maxFreq'    or env PBR_MAXFREQ
-            %   'igCutoff'   or env PBR_IGCUTOFF
-            %   'segSec'     or env PBR_SEGSEC
-            %   'stepMin'    or env PBR_STEPMIN
-            %   'critWL'     or env PBR_CRITWL
-            %
-            % Notes:
-    
-
             % ---------------- parse args ----------------
             ip = inputParser; ip.FunctionName = 'PBRPressureBurstProcessor.run';
             addParameter(ip,'PBRDir','',@(s)ischar(s)||isstring(s));
