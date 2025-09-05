@@ -156,7 +156,6 @@ methods (Access = private)
     end
 
     function [t_num, p_kPa, T_C] = readMeteoCSV(~, csvPath)
-        % Read meteo CSV: [Time_UTC, Press(kPa), Temperature(°C)] as numeric matrix
         A = readmatrix(csvPath);
         assert(size(A,2) >= 3, 'Meteo CSV must have 3 columns (Time, Press, Temp).');
         t_num = A(:,1); p_kPa = A(:,2); T_C = A(:,3);
