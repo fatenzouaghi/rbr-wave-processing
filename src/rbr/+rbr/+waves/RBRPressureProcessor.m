@@ -41,7 +41,7 @@ methods
         parse(ip,varargin{:});
         A = ip.Results;
 
-        % Allow environment variables as a subtle “expert gate”
+  
         if isempty(A.RSK),      A.RSK      = getenv('RBR_RSK');    end
         if isempty(A.MeteoCSV), A.MeteoCSV = getenv('RBR_METEO');  end
         assert(~isempty(A.RSK)      && exist(A.RSK,'file')==2, 'RSK file not found.');
@@ -66,10 +66,10 @@ methods
         % Geometry
         hd = A.zmembrane - A.zbottom; % sensor height above bed
 
-        % ---- 1) RBR .rsk (absolute pressure) ----
-        [t_rbr_num, p_raw_Pa] = obj.readRSKpressure(A.RSK);    % numeric datenum, Pa
+        % ---- 1) RBR .rsk ----
+        [t_rbr_num, p_raw_Pa] = obj.readRSKpressure(A.RSK);    % Pa
 
-        % ---- 2) Meteo CSV & barometric leveling (isothermal) ----
+        % ---- 2) Meteo CSV ----
         [t_met_num, p_atm_kPa, T_C] = obj.readMeteoCSV(A.MeteoCSV);
         p_atm_Pa = obj.fillmissing_linear(p_atm_kPa*1000);     % kPa->Pa + fill gaps
         p_atm_interp = interp1(t_met_num, p_atm_Pa, t_rbr_num, 'spline', 'extrap');
