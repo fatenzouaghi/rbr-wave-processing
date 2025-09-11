@@ -8,8 +8,7 @@ The code corrects atmospheric pressure, computes water levels, and estimates wav
 
 ## Data availability
 
-- All datasets used in this study—RBR raw files (.rsk), Spotter buoy files (.csv), and meteorological data (.csv)—are archived on Zenodo (DOI: 10.5281/zenodo.XXXXXXX
-).
+- All datasets used in this study—RBR raw files (.rsk), Spotter buoy files (.csv), and meteorological data (.csv)—are archived on Zenodo (DOI: https://doi.org/10.5281/zenodo.17049446).
 
 The original meteorological observations were obtained from the official  
 [Environment and Climate Change Canada portal](https://climat.meteo.gc.ca/historical_data/search_historic_data_f.html).  
